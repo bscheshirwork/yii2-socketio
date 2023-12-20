@@ -1,12 +1,12 @@
 <?php
 
-namespace yiicod\socketio\events;
+namespace bscheshirwork\socketio\events;
 
 /**
  * Interface EventRoomInterface
  * Provide room support for event
  *
- * @package yiicod\socketio\events
+ * @package bscheshirwork\socketio\events
  */
 interface EventRoomInterface
 {

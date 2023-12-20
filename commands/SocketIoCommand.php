@@ -1,16 +1,16 @@
 <?php
 
-namespace yiicod\socketio\commands;
+namespace bscheshirwork\socketio\commands;
 
 use Symfony\Component\Process\Process;
 use yiicod\cron\commands\DaemonController;
-use yiicod\socketio\Broadcast;
+use bscheshirwork\socketio\Broadcast;
 
 /**
  * Class SocketIoCommand
  * Run this daemon for listen socketio. Don't forget about run npm install in the folder "server".
  *
- * @package yiicod\socketio\commands
+ * @package bscheshirwork\socketio\commands
  */
 class SocketIoCommand extends DaemonController
 {

@@ -1,12 +1,12 @@
 <?php
 
-namespace yiicod\socketio\events;
+namespace bscheshirwork\socketio\events;
 
 /**
  * Interface EventPubInterface
  * Event publish interface
  *
- * @package yiicod\socketio\events
+ * @package bscheshirwork\socketio\events
  */
 interface EventPubInterface
 {

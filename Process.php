@@ -1,6 +1,6 @@
 <?php
 
-namespace yiicod\socketio;
+namespace bscheshirwork\socketio;
 
 use Yii;
 use yii\helpers\HtmlPurifier;
@@ -14,7 +14,7 @@ use yii\helpers\HtmlPurifier;
 /**
  * Class Process
  *
- * @package yiicod\socketio
+ * @package bscheshirwork\socketio
  */
 class Process
 {

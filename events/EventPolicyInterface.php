@@ -1,6 +1,6 @@
 <?php
 
-namespace yiicod\socketio\events;
+namespace bscheshirwork\socketio\events;
 
 interface EventPolicyInterface
 {

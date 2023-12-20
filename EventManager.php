@@ -1,6 +1,6 @@
 <?php
 
-namespace yiicod\socketio;
+namespace bscheshirwork\socketio;
 
 use Yii;
 use yii\base\Component;
