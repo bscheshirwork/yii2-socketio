@@ -63,7 +63,7 @@ trait CommandTrait
             'runtime' => Yii::getAlias('@runtime/logs'),
         ]);
         foreach ($args as $key => $value) {
-            $cmd[] = ' -' . $key . '=\'' . $value . '\'';
+            $cmd[] = ' -' . $key . '=' . $value;
         }
 
         return new Process($cmd);
