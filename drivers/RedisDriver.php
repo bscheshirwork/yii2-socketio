@@ -12,11 +12,11 @@ use yii\helpers\ArrayHelper;
  */
 final class RedisDriver
 {
-    public $hostname = 'localhost';
+    public string $hostname = 'localhost';
 
-    public $port = 6379;
+    public int $port = 6379;
 
-    public $password;
+    public string $password;
 
     private ?Client $connection = null;
 

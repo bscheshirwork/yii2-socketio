@@ -24,6 +24,7 @@ final class SocketIoCommand extends DaemonController
 
     /**
      * SocketOI worker
+     * @throws \Exception
      */
     protected function worker(): void
     {
@@ -31,23 +32,9 @@ final class SocketIoCommand extends DaemonController
         $process->disableOutput();
         $process->start();
 
-        // Save node proccess pid
+        // Save node process pid
         $this->addPid($process->getPid());
 
-        //        // Init connection for each channel
-        //        foreach (Broadcast::channels() as $channel) {
-        //            var_dump($channel);
-        //            Broadcast::publish($channel, ['name' => __CLASS__]);
-        //        }
-        //        $process->setTimeout(360000);
-        //        $process->setIdleTimeout(360000);
-        //        $process->wait(function ($type, $buffer) {
-        //            if (Process::ERR === $type) {
-        //                echo 'ERR > ' . $buffer;
-        //            } else {
-        //                echo 'OUT > ' . $buffer;
-        //            }
-        //        });
         while ($process->isRunning()) {
             $this->predis();
         }

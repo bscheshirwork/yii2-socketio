@@ -7,7 +7,7 @@ use yii\helpers\HtmlPurifier;
 
 final class Process
 {
-    public $yiiAlias;
+    public ?string $yiiAlias;
 
     private static array $_inWork = [];
 
@@ -17,7 +17,8 @@ final class Process
     }
 
     /**
-     * Run process. If more then limit then wait and try run process on more time.
+     * Run process. If more of limit then wait and try to run process on more time.
+     * @throws \JsonException
      */
     public function run(string $handle, array $data): \Symfony\Component\Process\Process
     {
@@ -37,8 +38,8 @@ final class Process
      */
     private function inWork(): void
     {
-        foreach (self::$_inWork as $i => $proccess) {
-            if ($proccess->isRunning() === false) {
+        foreach (self::$_inWork as $i => $process) {
+            if ($process->isRunning() === false) {
                 unset(self::$_inWork[$i]);
             }
         }
@@ -46,6 +47,7 @@ final class Process
 
     /**
      * Create cmd process and push to queue.
+     * @throws \JsonException
      */
     private function push(string $handle, array $data): \Symfony\Component\Process\Process
     {
@@ -54,7 +56,7 @@ final class Process
             'yii',
             'socketio/process',
             HtmlPurifier::process(escapeshellarg($handle)),
-            HtmlPurifier::process(escapeshellarg(json_encode($data))),
+            HtmlPurifier::process(escapeshellarg(json_encode($data, JSON_THROW_ON_ERROR))),
         ];
 
         if ($this->yiiAlias === null) {

@@ -4,7 +4,6 @@ namespace bscheshirwork\socketio;
 
 use Yii;
 use yii\base\Component;
-use yii\helpers\Json;
 
 final class EventManager extends Component
 {
@@ -13,14 +12,14 @@ final class EventManager extends Component
      *
      * @var array
      */
-    public $namespaces = [];
+    public array $namespaces = [];
 
     /**
      * You can set unique nsp for channels
      *
      * @var string
      */
-    public $nsp = '';
+    public string $nsp = '';
 
     /**
      * List with all events
@@ -29,20 +28,18 @@ final class EventManager extends Component
 
     public function getList(): array
     {
-        if (empty(static::$list)) {
+        if (empty(self::$list)) {
             foreach ($this->namespaces as $namespace) {
                 $alias = Yii::getAlias('@' . str_replace('\\', '/', trim((string) $namespace, '\\')));
                 foreach (glob(sprintf('%s/**.php', $alias)) as $file) {
                     $className = sprintf('%s\%s', $namespace, basename($file, '.php'));
                     if (method_exists($className, 'name')) {
-                        static::$list[$className::name()] = $className;
+                        self::$list[$className::name()] = $className;
                     }
                 }
             }
-
-            //Yii::info(Json::encode(static::$list));
         }
 
-        return static::$list;
+        return self::$list;
     }
 }

@@ -38,7 +38,7 @@ final class Broadcast
 
         $eventClassName = self::getManager()->getList()[$event] ?? null;
         if ($eventClassName === null) {
-            Yii::error(LoggerMessage::trace("Can not find {$event}", Json::encode($data)));
+            Yii::error(LoggerMessage::trace("Can not find {$event}", $data));
         }
 
         Yii::$container->get(Process::class)->run($eventClassName, $data);
@@ -102,7 +102,7 @@ final class Broadcast
                 'data' => $data,
             ]), 'socket.io');
             foreach ($eventClassName::broadcastOn() as $channel) {
-                static::publish(static::channelName($channel), [
+                self::publish(self::channelName($channel), [
                     'name' => $eventClassName::name(),
                     'data' => $data,
                 ]);
@@ -125,7 +125,7 @@ final class Broadcast
      */
     public static function publish(string $channel, array $data): void
     {
-        static::getDriver()->getConnection(true)->publish($channel, Json::encode($data));
+        self::getDriver()->getConnection(true)->publish($channel, Json::encode($data));
     }
 
     /**
@@ -140,7 +140,7 @@ final class Broadcast
 
             self::$channels = array_unique(self::$channels);
 
-            self::$channels = array_map(static fn ($channel): string => static::channelName($channel), self::$channels);
+            self::$channels = array_map(static fn ($channel): string => self::channelName($channel), self::$channels);
             //Yii::info(Json::encode(self::$channels));
         }
 

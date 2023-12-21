@@ -15,7 +15,7 @@ trait CommandTrait
     /**
      * @var string
      */
-    public $server = 'locahost:1212';
+    public string $server = 'locahost:1212';
 
     /**
      * [
@@ -25,16 +25,20 @@ trait CommandTrait
      *
      * @var array
      */
-    public $ssl = [];
+    public array $ssl = [];
 
     /**
      * Process job by id and connection
+     * @throws \JsonException
      */
     public function actionProcess($handler, $data): void
     {
-        Broadcast::process($handler, @json_decode((string) $data, true) ?? []);
+        Broadcast::process($handler, @json_decode((string)$data, true, 512, JSON_THROW_ON_ERROR) ?? []);
     }
 
+    /**
+     * @throws \JsonException
+     */
     public function nodejs(): Process
     {
         // Automatically send every new message to available log routes
@@ -50,15 +54,15 @@ trait CommandTrait
                 'host' => Broadcast::getDriver()->hostname,
                 'port' => Broadcast::getDriver()->port,
                 'password' => Broadcast::getDriver()->password,
-            ])),
+            ]), JSON_THROW_ON_ERROR),
             'sub' => json_encode(array_filter([
                 'host' => Broadcast::getDriver()->hostname,
                 'port' => Broadcast::getDriver()->port,
                 'password' => Broadcast::getDriver()->password,
-            ])),
+            ]), JSON_THROW_ON_ERROR),
             'channels' => implode(',', Broadcast::channels()),
             'nsp' => Broadcast::getManager()->nsp,
-            'ssl' => empty($this->ssl) ? null : json_encode($this->ssl),
+            'ssl' => empty($this->ssl) ? null : json_encode($this->ssl, JSON_THROW_ON_ERROR),
             'runtime' => Yii::getAlias('@runtime/logs'),
         ], 'strlen');
         foreach ($args as $key => $value) {
@@ -69,15 +73,19 @@ trait CommandTrait
     }
 
     /**
-     * Predis proccess
+     * Predis process
+     * @throws \Exception
      */
     public function predis(): bool
     {
         $pubSubLoop = function (): void {
             $client = Broadcast::getDriver()->getConnection(true);
 
-            // Initialize a new pubsub consumer.
-            $pubsub = $client->pubSubLoop();
+            if ($client === null) {
+                throw new \Exception('Broadcast getConnection return null');
+            }
+            // Initialize a new pubSubLoop consumer.
+            $pubSubLoop = $client->pubSubLoop();
 
             $channels = [];
             foreach (Broadcast::channels() as $key => $channel) {
@@ -85,13 +93,13 @@ trait CommandTrait
             }
 
             // Subscribe to your channels
-            $pubsub->subscribe(ArrayHelper::merge(['control_channel'], $channels));
+            $pubSubLoop->subscribe(ArrayHelper::merge(['control_channel'], $channels));
 
             // Start processing the pubsup messages. Open a terminal and use redis-cli
             // to push messages to the channels. Examples:
             //   ./redis-cli PUBLISH notifications "this is a test"
             //   ./redis-cli PUBLISH control_channel quit_loop
-            foreach ($pubsub as $message) {
+            foreach ($pubSubLoop as $message) {
                 switch ($message->kind) {
                     case 'subscribe':
                         $this->output("Subscribed to {$message->channel}\n");
@@ -99,8 +107,8 @@ trait CommandTrait
                     case 'message':
                         if ($message->channel == 'control_channel') {
                             if ($message->payload == 'quit_loop') {
-                                $this->output("Aborting pubsub loop...\n", Console::FG_RED);
-                                $pubsub->unsubscribe();
+                                $this->output("Aborting pubSubLoop loop...\n", Console::FG_RED);
+                                $pubSubLoop->unsubscribe();
                             } else {
                                 $this->output("Received an unrecognized command: {$message->payload}\n", Console::FG_RED);
                             }
@@ -108,20 +116,7 @@ trait CommandTrait
                             $payload = Json::decode($message->payload);
                             $data = $payload['data'] ?? [];
 
-                            //                            $pid = pcntl_fork();
-                            //                            if ($pid == -1) {
-                            //                                exit('Error while forking process.');
-                            //                            } elseif ($pid) {
-                            //                                //parent. Wait for the child and continues
-                            //                                pcntl_wait($status);
-                            //                                $exitStatus = pcntl_wexitstatus($status);
-                            //                                if ($exitStatus !== 0) {
-                            //                                    //put job back to queue or other stuff
-                            //                                }
-                            //                            }else {
                             Broadcast::on($payload['name'], $data);
-                            //                                Yii::$app->end();
-                            //                            }
                             // Received the following message from {$message->channel}:") {$message->payload}";
                         }
 
@@ -129,13 +124,13 @@ trait CommandTrait
                 }
             }
 
-            // Always unset the pubsub consumer instance when you are done! The
+            // Always unset the pubSubLoop consumer instance when you are done! The
             // class destructor will take care of cleanups and prevent protocol
             // desynchronizations between the client and the server.
-            unset($pubsub);
+            unset($pubSubLoop);
         };
 
-        // Auto recconnect on redis timeout
+        // Auto reconnect on redis timeout
         try {
             $pubSubLoop();
         } catch (ConnectionException) {
