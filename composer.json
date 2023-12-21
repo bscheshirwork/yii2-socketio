@@ -11,6 +11,7 @@
     }
   ],
   "require": {
+    "php": "~8.3.0",
     "yiisoft/yii2": "2.*",
     "yiicod/yii2-cron": "1.*",
     "yiicod/yii2-base": "1.*",
