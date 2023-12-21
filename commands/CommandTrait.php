@@ -97,7 +97,7 @@ trait CommandTrait
             // Subscribe to your channels
             $pubSubLoop->subscribe(ArrayHelper::merge(['control_channel'], $channels));
 
-            // Start processing the pubsup messages. Open a terminal and use redis-cli
+            // Start processing the $pubSubLoop messages. Open a terminal and use redis-cli
             // to push messages to the channels. Examples:
             //   ./redis-cli PUBLISH notifications "this is a test"
             //   ./redis-cli PUBLISH control_channel quit_loop
@@ -128,7 +128,7 @@ trait CommandTrait
 
             // Always unset the pubSubLoop consumer instance when you are done! The
             // class destructor will take care of cleanups and prevent protocol
-            // desynchronizations between the client and the server.
+            // desynchronization between the client and the server.
             unset($pubSubLoop);
         };
 
