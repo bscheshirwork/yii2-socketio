@@ -34,12 +34,15 @@ trait CommandTrait
         Broadcast::process($handler, @json_decode($data, true) ?? []);
     }
 
-    public function nodejs()
+    public function nodejs(): Process
     {
         // Automatically send every new message to available log routes
         Yii::getLogger()->flushInterval = 1;
 
-        $cmd = sprintf('node %s/%s', realpath(dirname(__FILE__) . '/../server'), 'index.js');
+        $cmd = [
+            'node',
+            dirname(__DIR__) . '/server/index.js',
+        ];
         $args = array_filter([
             'server' => $this->server,
             'pub' => json_encode(array_filter([
@@ -58,12 +61,10 @@ trait CommandTrait
             'runtime' => Yii::getAlias('@runtime/logs'),
         ], 'strlen');
         foreach ($args as $key => $value) {
-            $cmd .= ' -' . $key . '=\'' . $value . '\'';
+            $cmd[] = ' -' . $key . '=\'' . $value . '\'';
         }
 
-        $process = new Process($cmd);
-
-        return $process;
+        return new Process($cmd);
     }
 
     /**
