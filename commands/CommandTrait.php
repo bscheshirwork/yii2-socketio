@@ -85,6 +85,10 @@ trait CommandTrait
             // Initialize a new pubSubLoop consumer.
             $pubSubLoop = $client->pubSubLoop();
 
+            if ($pubSubLoop === null) {
+                throw new Exception('Broadcast pubSubLoop is null');
+            }
+
             $channels = [];
             foreach (Broadcast::channels() as $key => $channel) {
                 $channels[$key] = $channel . '.io';
@@ -103,8 +107,8 @@ trait CommandTrait
                         $this->output("Subscribed to {$message->channel}\n");
                         break;
                     case 'message':
-                        if ($message->channel == 'control_channel') {
-                            if ($message->payload == 'quit_loop') {
+                        if ($message->channel === 'control_channel') {
+                            if ($message->payload === 'quit_loop') {
                                 $this->output("Aborting pubSubLoop loop...\n", Console::FG_RED);
                                 $pubSubLoop->unsubscribe();
                             } else {
