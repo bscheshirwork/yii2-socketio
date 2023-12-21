@@ -61,7 +61,7 @@ trait CommandTrait
             'nsp' => Broadcast::getManager()->nsp,
             'ssl' => empty($this->ssl) ? null : json_encode($this->ssl, JSON_THROW_ON_ERROR),
             'runtime' => Yii::getAlias('@runtime/logs'),
-        ], 'strlen');
+        ]);
         foreach ($args as $key => $value) {
             $cmd[] = ' -' . $key . '=\'' . $value . '\'';
         }
