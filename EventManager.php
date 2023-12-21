@@ -6,7 +6,7 @@ use Yii;
 use yii\base\Component;
 use yii\helpers\Json;
 
-class EventManager extends Component
+final class EventManager extends Component
 {
     /**
      * Array of events namespaces
@@ -24,16 +24,14 @@ class EventManager extends Component
 
     /**
      * List with all events
-     *
-     * @var array
      */
-    protected static $list = [];
+    private static array $list = [];
 
     public function getList(): array
     {
         if (empty(static::$list)) {
-            foreach ($this->namespaces as $key => $namespace) {
-                $alias = Yii::getAlias('@' . str_replace('\\', '/', trim($namespace, '\\')));
+            foreach ($this->namespaces as $namespace) {
+                $alias = Yii::getAlias('@' . str_replace('\\', '/', trim((string) $namespace, '\\')));
                 foreach (glob(sprintf('%s/**.php', $alias)) as $file) {
                     $className = sprintf('%s\%s', $namespace, basename($file, '.php'));
                     if (method_exists($className, 'name')) {
@@ -41,6 +39,7 @@ class EventManager extends Component
                     }
                 }
             }
+
             //Yii::info(Json::encode(static::$list));
         }
 

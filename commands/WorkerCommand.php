@@ -56,14 +56,13 @@
 
 namespace bscheshirwork\socketio\commands;
 
+use Exception;
 use yii\console\Controller;
 
 /**
  * Socketio server. You should run two commands: "socketio/node-js-server" and "socketio/php-server". Use pm2 as daemon manager.
- *
- * @package bscheshirwork\socketio\commands
  */
-class WorkerCommand extends Controller
+final class WorkerCommand extends Controller
 {
     use CommandTrait;
 
@@ -80,9 +79,9 @@ class WorkerCommand extends Controller
     /**
      * Node js listener.
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function actionNodeJsServer()
+    public function actionNodeJsServer(): void
     {
         $process = $this->nodejs();
         $process->setTimeout(null);
@@ -93,19 +92,16 @@ class WorkerCommand extends Controller
     /**
      * Php listener
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function actionPhpServer()
+    public function actionPhpServer(): void
     {
         while (true) {
             $this->predis();
         }
     }
 
-    /**
-     * @return FileOutput
-     */
-    protected function output($text)
+    private function output($text): void
     {
         $this->stdout($text);
     }

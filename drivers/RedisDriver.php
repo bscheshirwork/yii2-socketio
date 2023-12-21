@@ -2,36 +2,31 @@
 
 namespace bscheshirwork\socketio\drivers;
 
+use Predis\Client;
 use yii\helpers\ArrayHelper;
 
 /**
  * @todo Implement username and password
  *
  * Class RedisDriver
- *
- * @package bscheshirwork\socketio\drivers
  */
-class RedisDriver
+final class RedisDriver
 {
     public $hostname = 'localhost';
 
     public $port = 6379;
 
     public $password;
-    /**
-     * @var
-     */
-    protected $connection;
+
+    private ?Client $connection = null;
 
     /**
      * Get predis connection
-     *
-     * @return \Predis\Client
      */
-    public function getConnection($reset = false)
+    public function getConnection($reset = false): ?Client
     {
-        if (null === $this->connection || true === $reset) {
-            $this->connection = new \Predis\Client(ArrayHelper::merge([
+        if ($this->connection === null || $reset === true) {
+            $this->connection = new Client(ArrayHelper::merge([
                 'scheme' => 'tcp',
                 'read_write_timeout' => 0,
             ], [

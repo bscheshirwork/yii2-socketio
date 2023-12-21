@@ -6,10 +6,8 @@ use yii\web\AssetBundle;
 
 /**
  * Access Message asset bundle.
- *
- * @author Dmitry Turchanin
  */
-class SocketIoAsset extends AssetBundle
+final class SocketIoAsset extends AssetBundle
 {
     /**
      * @var string

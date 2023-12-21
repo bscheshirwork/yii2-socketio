@@ -5,46 +5,21 @@ namespace bscheshirwork\socketio;
 use Yii;
 use yii\helpers\HtmlPurifier;
 
-/**
- * Class Process
- *
- * @package SfCod\SocketIoBundle
- */
-
-/**
- * Class Process
- *
- * @package bscheshirwork\socketio
- */
-class Process
+final class Process
 {
-    /**
-     * @var array
-     */
-    private static $_inWork = [];
-
-    /**
-     * @var
-     */
     public $yiiAlias;
 
-    /**
-     * @return int
-     */
+    private static array $_inWork = [];
+
     public function getParallelEnv(): int
     {
-        return getenv('SOCKET_IO.PARALLEL') ? getenv('SOCKET_IO.PARALLEL') : 10;
+        return getenv('SOCKET_IO.PARALLEL') ?: 10;
     }
 
     /**
      * Run process. If more then limit then wait and try run process on more time.
-     *
-     * @param string $handle
-     * @param array $data
-     *
-     * @return \Symfony\Component\Process\Process
      */
-    public function run(string $handle, array $data)
+    public function run(string $handle, array $data): \Symfony\Component\Process\Process
     {
         $this->inWork();
 
@@ -60,10 +35,10 @@ class Process
     /**
      * In work processes
      */
-    private function inWork()
+    private function inWork(): void
     {
         foreach (self::$_inWork as $i => $proccess) {
-            if (false === $proccess->isRunning()) {
+            if ($proccess->isRunning() === false) {
                 unset(self::$_inWork[$i]);
             }
         }
@@ -71,11 +46,6 @@ class Process
 
     /**
      * Create cmd process and push to queue.
-     *
-     * @param string $handle
-     * @param array $data
-     *
-     * @return \Symfony\Component\Process\Process
      */
     private function push(string $handle, array $data): \Symfony\Component\Process\Process
     {
@@ -87,7 +57,7 @@ class Process
             HtmlPurifier::process(escapeshellarg(json_encode($data))),
         ];
 
-        if (is_null($this->yiiAlias)) {
+        if ($this->yiiAlias === null) {
             if (file_exists(Yii::getAlias('@app/yii'))) {
                 $this->yiiAlias = '@app';
             } elseif (file_exists(Yii::getAlias('@app/../yii'))) {

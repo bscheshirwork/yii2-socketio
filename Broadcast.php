@@ -2,39 +2,31 @@
 
 namespace bscheshirwork\socketio;
 
+use bscheshirwork\socketio\drivers\RedisDriver;
+use bscheshirwork\socketio\events\EventPolicyInterface;
+use bscheshirwork\socketio\events\EventPubInterface;
+use bscheshirwork\socketio\events\EventRoomInterface;
+use bscheshirwork\socketio\events\EventSubInterface;
 use Exception;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\helpers\HtmlPurifier;
 use yii\helpers\Json;
 use yiicod\base\helpers\LoggerMessage;
-use bscheshirwork\socketio\drivers\RedisDriver;
-use bscheshirwork\socketio\events\EventPolicyInterface;
-use bscheshirwork\socketio\events\EventPubInterface;
-use bscheshirwork\socketio\events\EventRoomInterface;
-use bscheshirwork\socketio\events\EventSubInterface;
 
-/**
- * Class Broadcast
- *
- * @package bscheshirwork\socketio
- */
-class Broadcast
+final class Broadcast
 {
-    protected static $channels = [];
+    private static array $channels = [];
 
     /**
      * Subscribe to event from client
      *
-     * @param string $event
-     * @param array $data
-     *
      * @throws Exception
      */
-    public static function on(string $event, array $data)
+    public static function on(string $event, array $data): void
     {
         // Clear data
-        array_walk_recursive($data, function (&$item, $key) {
+        array_walk_recursive($data, static function (&$item, $key): void {
             $item = HtmlPurifier::process($item);
         });
 
@@ -45,8 +37,8 @@ class Broadcast
         ]), 'socket.io');
 
         $eventClassName = self::getManager()->getList()[$event] ?? null;
-        if (null === $eventClassName) {
-            Yii::error(LoggerMessage::trace("Can not find $event", Json::encode($data)));
+        if ($eventClassName === null) {
+            Yii::error(LoggerMessage::trace("Can not find {$event}", Json::encode($data)));
         }
 
         Yii::$container->get(Process::class)->run($eventClassName, $data);
@@ -54,59 +46,53 @@ class Broadcast
 
     /**
      * Handle process from client
-     *
-     * @param string $handler
-     * @param array $data
      */
-    public static function process(string $handler, array $data)
+    public static function process(string $handler, array $data): void
     {
         try {
             /** @var EventSubInterface|EventPolicyInterface $event */
             $event = new $handler($data);
 
-            if (false === $event instanceof EventSubInterface) {
+            if ($event instanceof EventSubInterface === false) {
                 throw new Exception('Event should implement EventSubInterface');
             }
 
             Yii::$app->db->close();
             Yii::$app->db->open();
 
-            if (true === $event instanceof EventPolicyInterface && false === $event->can($data)) {
+            if ($event instanceof EventPolicyInterface && $event->can($data) === false) {
                 return;
             }
 
             $event->handle($data);
-        } catch (Exception $e) {
-            Yii::error(LoggerMessage::log($e, Json::encode($data)));
+        } catch (Exception $exception) {
+            Yii::error(LoggerMessage::log($exception, Json::encode($data)));
         }
     }
 
     /**
      * Emit event to client
      *
-     * @param string $event
-     * @param array $data
-     *
      * @throws Exception
      */
-    public static function emit(string $event, array $data)
+    public static function emit(string $event, array $data): void
     {
         $eventClassName = self::getManager()->getList()[$event] ?? null;
         try {
-            if (null === $eventClassName) {
-                throw new Exception("Can not find $event");
+            if ($eventClassName === null) {
+                throw new Exception("Can not find {$event}");
             }
 
             /** @var EventPubInterface|EventRoomInterface $event */
             $event = new $eventClassName($data);
 
-            if (false === $event instanceof EventPubInterface) {
+            if ($event instanceof EventPubInterface === false) {
                 throw new Exception('Event should implement EventPubInterface');
             }
 
             $data = $event->fire($data);
 
-            if (true === $event instanceof EventRoomInterface) {
+            if ($event instanceof EventRoomInterface) {
                 $data['room'] = $event->room();
             }
 
@@ -121,38 +107,29 @@ class Broadcast
                     'data' => $data,
                 ]);
             }
-        } catch (Exception $e) {
-            Yii::error(LoggerMessage::log($e));
+        } catch (Exception $exception) {
+            Yii::error(LoggerMessage::log($exception));
         }
     }
 
     /**
      * Prepare channel name
-     *
-     * @param $name
-     *
-     * @return string
      */
-    public static function channelName($name)
+    public static function channelName(string $name): string
     {
         return $name . self::getManager()->nsp;
     }
 
     /**
      * Publish data to redis channel
-     *
-     * @param string $channel
-     * @param array $data
      */
-    public static function publish(string $channel, array $data)
+    public static function publish(string $channel, array $data): void
     {
         static::getDriver()->getConnection(true)->publish($channel, Json::encode($data));
     }
 
     /**
      * Redis channels names
-     *
-     * @return array
      */
     public static function channels(): array
     {
@@ -160,11 +137,10 @@ class Broadcast
             foreach (self::getManager()->getList() as $eventClassName) {
                 self::$channels = ArrayHelper::merge(self::$channels, $eventClassName::broadcastOn());
             }
+
             self::$channels = array_unique(self::$channels);
 
-            self::$channels = array_map(function ($channel) {
-                return static::channelName($channel);
-            }, self::$channels);
+            self::$channels = array_map(static fn ($channel): string => static::channelName($channel), self::$channels);
             //Yii::info(Json::encode(self::$channels));
         }
 

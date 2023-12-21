@@ -2,12 +2,13 @@
 
 namespace bscheshirwork\socketio\commands;
 
+use bscheshirwork\socketio\Broadcast;
+use Predis\Connection\ConnectionException;
 use Symfony\Component\Process\Process;
 use Yii;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Console;
 use yii\helpers\Json;
-use bscheshirwork\socketio\Broadcast;
 
 trait CommandTrait
 {
@@ -29,9 +30,9 @@ trait CommandTrait
     /**
      * Process job by id and connection
      */
-    public function actionProcess($handler, $data)
+    public function actionProcess($handler, $data): void
     {
-        Broadcast::process($handler, @json_decode($data, true) ?? []);
+        Broadcast::process($handler, @json_decode((string) $data, true) ?? []);
     }
 
     public function nodejs(): Process
@@ -70,9 +71,9 @@ trait CommandTrait
     /**
      * Predis proccess
      */
-    public function predis()
+    public function predis(): bool
     {
-        $pubSubLoop = function () {
+        $pubSubLoop = function (): void {
             $client = Broadcast::getDriver()->getConnection(true);
 
             // Initialize a new pubsub consumer.
@@ -96,8 +97,8 @@ trait CommandTrait
                         $this->output("Subscribed to {$message->channel}\n");
                         break;
                     case 'message':
-                        if ('control_channel' == $message->channel) {
-                            if ('quit_loop' == $message->payload) {
+                        if ($message->channel == 'control_channel') {
+                            if ($message->payload == 'quit_loop') {
                                 $this->output("Aborting pubsub loop...\n", Console::FG_RED);
                                 $pubsub->unsubscribe();
                             } else {
@@ -107,22 +108,23 @@ trait CommandTrait
                             $payload = Json::decode($message->payload);
                             $data = $payload['data'] ?? [];
 
-//                            $pid = pcntl_fork();
-//                            if ($pid == -1) {
-//                                exit('Error while forking process.');
-//                            } elseif ($pid) {
-//                                //parent. Wait for the child and continues
-//                                pcntl_wait($status);
-//                                $exitStatus = pcntl_wexitstatus($status);
-//                                if ($exitStatus !== 0) {
-//                                    //put job back to queue or other stuff
-//                                }
-//                            }else {
+                            //                            $pid = pcntl_fork();
+                            //                            if ($pid == -1) {
+                            //                                exit('Error while forking process.');
+                            //                            } elseif ($pid) {
+                            //                                //parent. Wait for the child and continues
+                            //                                pcntl_wait($status);
+                            //                                $exitStatus = pcntl_wexitstatus($status);
+                            //                                if ($exitStatus !== 0) {
+                            //                                    //put job back to queue or other stuff
+                            //                                }
+                            //                            }else {
                             Broadcast::on($payload['name'], $data);
-//                                Yii::$app->end();
-//                            }
+                            //                                Yii::$app->end();
+                            //                            }
                             // Received the following message from {$message->channel}:") {$message->payload}";
                         }
+
                         break;
                 }
             }
@@ -136,7 +138,7 @@ trait CommandTrait
         // Auto recconnect on redis timeout
         try {
             $pubSubLoop();
-        } catch (\Predis\Connection\ConnectionException $e) {
+        } catch (ConnectionException) {
             $pubSubLoop();
         }
 
