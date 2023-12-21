@@ -3,6 +3,8 @@
 namespace bscheshirwork\socketio\commands;
 
 use bscheshirwork\socketio\Broadcast;
+use Exception;
+use JsonException;
 use Predis\Connection\ConnectionException;
 use Symfony\Component\Process\Process;
 use Yii;
@@ -12,9 +14,6 @@ use yii\helpers\Json;
 
 trait CommandTrait
 {
-    /**
-     * @var string
-     */
     public string $server = 'locahost:1212';
 
     /**
@@ -22,22 +21,20 @@ trait CommandTrait
      *     key => 'path to key',
      *     cert => 'path to cert',
      * ]
-     *
-     * @var array
      */
     public array $ssl = [];
 
     /**
      * Process job by id and connection
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function actionProcess($handler, $data): void
     {
-        Broadcast::process($handler, @json_decode((string)$data, true, 512, JSON_THROW_ON_ERROR) ?? []);
+        Broadcast::process($handler, @json_decode((string) $data, true, 512, JSON_THROW_ON_ERROR) ?? []);
     }
 
     /**
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function nodejs(): Process
     {
@@ -74,7 +71,7 @@ trait CommandTrait
 
     /**
      * Predis process
-     * @throws \Exception
+     * @throws Exception
      */
     public function predis(): bool
     {
@@ -82,8 +79,9 @@ trait CommandTrait
             $client = Broadcast::getDriver()->getConnection(true);
 
             if ($client === null) {
-                throw new \Exception('Broadcast getConnection return null');
+                throw new Exception('Broadcast getConnection return null');
             }
+
             // Initialize a new pubSubLoop consumer.
             $pubSubLoop = $client->pubSubLoop();
 

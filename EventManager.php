@@ -9,15 +9,11 @@ final class EventManager extends Component
 {
     /**
      * Array of events namespaces
-     *
-     * @var array
      */
     public array $namespaces = [];
 
     /**
      * You can set unique nsp for channels
-     *
-     * @var string
      */
     public string $nsp = '';
 

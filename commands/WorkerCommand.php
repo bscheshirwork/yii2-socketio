@@ -17,9 +17,6 @@ final class WorkerCommand extends Controller
      */
     public $defaultAction = 'work';
 
-    /**
-     * @var int
-     */
     public int $delay = 15;
 
     /**

@@ -2,12 +2,13 @@
 
 namespace bscheshirwork\socketio;
 
+use JsonException;
 use Yii;
 use yii\helpers\HtmlPurifier;
 
 final class Process
 {
-    public ?string $yiiAlias;
+    public ?string $yiiAlias = null;
 
     private static array $_inWork = [];
 
@@ -18,7 +19,7 @@ final class Process
 
     /**
      * Run process. If more of limit then wait and try to run process on more time.
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function run(string $handle, array $data): \Symfony\Component\Process\Process
     {
@@ -47,7 +48,7 @@ final class Process
 
     /**
      * Create cmd process and push to queue.
-     * @throws \JsonException
+     * @throws JsonException
      */
     private function push(string $handle, array $data): \Symfony\Component\Process\Process
     {

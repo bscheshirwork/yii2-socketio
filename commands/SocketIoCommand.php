@@ -2,7 +2,7 @@
 
 namespace bscheshirwork\socketio\commands;
 
-use bscheshirwork\socketio\Broadcast;
+use Exception;
 use Symfony\Component\Process\Process;
 use yiicod\cron\commands\DaemonController;
 
@@ -24,7 +24,7 @@ final class SocketIoCommand extends DaemonController
 
     /**
      * SocketOI worker
-     * @throws \Exception
+     * @throws Exception
      */
     protected function worker(): void
     {
