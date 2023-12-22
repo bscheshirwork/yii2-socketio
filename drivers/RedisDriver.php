@@ -16,7 +16,7 @@ final class RedisDriver
 
     public int $port = 6379;
 
-    public string $password;
+    public ?string $password;
 
     private ?Client $connection = null;
 
