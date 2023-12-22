@@ -29,7 +29,7 @@ final class WorkerCommand extends Controller
         $process = $this->nodejs();
         $process->setTimeout(null);
         $process->setIdleTimeout(null);
-        $process->run();
+        $process->mustRun();
     }
 
     /**

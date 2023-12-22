@@ -40,10 +40,12 @@ trait CommandTrait
     {
         // Automatically send every new message to available log routes
         Yii::getLogger()->flushInterval = 1;
+        $baseDir = dirname(__DIR__);
+        $nodeDir = $baseDir;
 
         $cmd = [
             'node',
-            dirname(__DIR__) . '/server/index.js',
+            $baseDir . '/server/index.js',
         ];
         $args = array_filter([
             'server' => $this->server,
@@ -66,7 +68,7 @@ trait CommandTrait
             $cmd[] = ' -' . $key . '=' . $value;
         }
 
-        return new Process($cmd);
+        return new Process($cmd, $nodeDir);
     }
 
     /**
