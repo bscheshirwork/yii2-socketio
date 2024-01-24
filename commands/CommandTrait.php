@@ -16,6 +16,8 @@ trait CommandTrait
 {
     public string $server = 'locahost:1212';
 
+    public string $log = '@runtime/log';
+
     /**
      * [
      *     key => 'path to key',
@@ -62,7 +64,7 @@ trait CommandTrait
             'channels' => implode(',', Broadcast::channels()),
             'nsp' => Broadcast::getManager()->nsp,
             'ssl' => empty($this->ssl) ? null : json_encode($this->ssl, JSON_THROW_ON_ERROR),
-            'runtime' => Yii::getAlias('@runtime/logs'),
+            'runtime' => Yii::getAlias($this->log),
         ]);
         foreach ($args as $key => $value) {
             $cmd[] = '-' . $key . '=' . $value;
